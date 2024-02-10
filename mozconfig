@@ -1,0 +1,99 @@
+# https://firefox-source-docs.mozilla.org/setup/configuring_build_options.html
+# this mozconfig uses settings by Mercury
+
+# run this to include this config
+# export MOZCONFIG=./mozconfig
+
+# build Firefox
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-ff-rel-opt
+
+# define used threads (get using "nproc")
+mk_add_options MOZ_PARALLEL_BUILD=8
+
+export VERBOSE=1
+
+# BASE
+ac_add_options --enable-optimize --disable-debug --enable-project=browser --disable-artifact-builds --enable-release
+ac_add_options --enable-bootstrap
+ac_add_options --disable-debug
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-debug-js-modules
+ac_add_options --disable-tests
+ac_add_options --enable-strip
+ac_add_options --enable-install-strip
+# optimize for repeated builds
+ac_add_options --with-ccache=sccache
+
+# DEBLOAT
+ac_add_options --disable-parental-controls
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --disable-profiling
+# ac_add_options --disable-accessibility
+
+# OPTIMIZE
+# a bunch of different ways, one will work
+mk_add_options MOZ_OPTIMIZE=1
+MOZ_OPTIMIZE=1
+export MOZ_OPTIMIZE=1
+export STRIP_FLAGS="--strip-debug --strip-unneeded"
+
+# Experimental Compiler, Linker, and Rust flags
+# export CFLAGS="-O3 -mavx -maes"
+# export CPPFLAGS="-O3 -mavx -maes"
+# export CXXFLAGS="-O3 -mavx -maes"
+# export LDFLAGS="-Wl,-O3 -mavx -maes"
+# export MOZ_LTO_LDFLAGS="-Wl,-mllvm,-polly"
+# export RUSTFLAGS="-C target-feature=+avx"
+
+# MEDIA
+ac_add_options --enable-sandbox
+ac_add_options --enable-raw
+# webrtc is fixed in wayland-only builds: https://bugzilla.mozilla.org/show_bug.cgi?id=1661450#c88
+ac_add_options --enable-webrtc
+ac_add_options --enable-alsa
+ac_add_options --enable-jxl
+ac_add_options --enable-av1
+ac_add_options --enable-eme=widevine
+# experimental: disable puleaudio in favor of pipewire
+# ac_add_options --enable-pulseaudio
+
+# additional ones not included in Mercury
+ac_add_options --with-system-jpeg
+ac_add_options --with-system-zlib
+ac_add_options --with-system-png
+
+# HARDENING
+# https://bugzilla.mozilla.org/show_bug.cgi?id=620058
+ac_add_options --enable-hardening
+# disable Firefoxes memory allocator, this build will only work when preloading one!
+ac_add_options --disable-jemalloc
+# allow replacing malloc manually but still include it:
+# ac_add_options --enable-replace-malloc
+# Wayland by default
+ac_add_options --enable-default-toolkit=cairo-gtk3-wayland
+
+# PRIVACY
+mk_add_options MOZ_CRASHREPORTER=0
+mk_add_options MOZ_DATA_REPORTING=0
+mk_add_options MOZ_SERVICES_HEALTHREPORT=0
+mk_add_options MOZ_TELEMETRY_REPORTING=0
+MOZ_CRASHREPORTER=0
+MOZ_DATA_REPORTING=0
+export MOZ_CRASHREPORTER=0
+export MOZ_DATA_REPORTING=0
+
+# MOZ_REQUIRE_SIGNING=?
+# export MOZ_REQUIRE_SIGNING=?
+
+# ADDONS (needed for OS-preinstalled addons like langpacks)
+ac_add_options --allow-addon-sideload
+ac_add_options --with-unsigned-addon-scopes=app,system
+
+# Branding
+ac_add_options --with-app-name=firefox-hardened
+ac_add_options --with-app-basename=Firefox-Hardened
+
+# Autoclobber
+mk_add_options AUTOCLOBBER=1
+export AUTOCLOBBER=1
